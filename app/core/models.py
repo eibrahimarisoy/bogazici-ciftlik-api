@@ -1,6 +1,7 @@
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 
@@ -52,6 +53,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         """Return the first_name plus last_name, with a space in between"""
         return self.first_name
+    
+    def __str__(self):
+        return self.email
 
 
 class City(models.Model):
@@ -104,3 +108,16 @@ class Address(models.Model):
 
     class Meta:
         ordering = ['id']
+
+
+class Customer(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    phone1 = models.CharField(max_length=50, verbose_name="Telefon1", unique=True)
+    phone2 = models.CharField(max_length=50, blank=True, null=True, verbose_name="Telefon2")
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name="Adres")
+
+    def __str__(self):
+        return f"{self.user}"
+
+    class Meta:
+        ordering = ['user']
