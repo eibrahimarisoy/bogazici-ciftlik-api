@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from core.models import User
+from core.models import User, Address
 
 class UserAdmin(BaseUserAdmin):
     ordering = ['id']
@@ -26,3 +26,4 @@ class UserAdmin(BaseUserAdmin):
     )
     
 admin.site.register(User, UserAdmin)
+admin.site.register(Address)

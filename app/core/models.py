@@ -53,4 +53,54 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Return the first_name plus last_name, with a space in between"""
         return self.first_name
 
-    
+
+class City(models.Model):
+    name = models.CharField(max_length=30)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class District(models.Model):
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
+    name = models.CharField(max_length=30)
+    nick = models.CharField(max_length=4, null=True, blank=True, unique=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Neighborhood(models.Model):
+    district = models.ForeignKey(District, on_delete=models.CASCADE)
+    name = models.CharField(max_length=30)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Address(models.Model):
+    city = models.ForeignKey(
+        City, on_delete=models.SET_NULL, null=True, verbose_name="İl")
+    district = models.ForeignKey(
+        District, on_delete=models.SET_NULL, null=True, verbose_name="İlçe")
+    neighborhood = models.ForeignKey(
+        Neighborhood, on_delete=models.SET_NULL, null=True, verbose_name="Mahalle")
+    extra_info = models.TextField(max_length=255, blank=True, null=True, verbose_name="Sokak-Apartman")
+
+    def get_full_address(self):
+        return self.district.name + "-" + self.neighborhood.name + "-" + self.extra_info
+
+    def __str__(self):
+        return f"{self.district.name.upper()} {self.neighborhood.name.upper()} {self.extra_info.upper()}"
+
+    class Meta:
+        ordering = ['id']
