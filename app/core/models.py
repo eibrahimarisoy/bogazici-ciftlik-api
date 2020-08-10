@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
@@ -167,3 +168,23 @@ class Product(models.Model):
     
     class Meta:
         ordering = ['category']
+
+
+class OrderItem(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name="Ürün Adı"
+        )
+    price = models.FloatField(default=0)
+    is_deleted = models.BooleanField(default=False)
+    quantity = models.FloatField(
+        validators=[MinValueValidator(0.1)],
+        verbose_name="Miktar"
+        )
+
+    createt_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.product.name} price: {self.price} TL"
