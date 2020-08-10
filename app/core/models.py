@@ -1,17 +1,10 @@
-from django.core.validators import MinValueValidator
+from django.conf import settings
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
-from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
-
-DISTRIBUTION_UNITS = [
-    ('piece', 'Adet'),
-    ('liter', 'LT'),
-    ('kilogram', 'KG'),
-    ('kangal', 'Kangal'),
-]
 
 
 class UserManager(BaseUserManager):
@@ -80,7 +73,12 @@ class City(models.Model):
 class District(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     name = models.CharField(max_length=30)
-    nick = models.CharField(max_length=4, null=True, blank=True, unique=True)
+    nick = models.CharField(
+        max_length=4, 
+        null=True,
+        blank=True,
+        unique=True
+        )
 
     class Meta:
         ordering = ['name']
@@ -102,15 +100,32 @@ class Neighborhood(models.Model):
 
 class Address(models.Model):
     city = models.ForeignKey(
-        City, on_delete=models.SET_NULL, null=True, verbose_name="İl")
+        City,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="İl"
+        )
     district = models.ForeignKey(
-        District, on_delete=models.SET_NULL, null=True, verbose_name="İlçe")
+        District,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="İlçe"
+        )
     neighborhood = models.ForeignKey(
-        Neighborhood, on_delete=models.SET_NULL, null=True, verbose_name="Mahalle")
-    extra_info = models.TextField(max_length=255, blank=True, null=True, verbose_name="Sokak-Apartman")
+        Neighborhood,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Mahalle"
+        )
+    extra_info = models.TextField(
+        max_length=255,
+        verbose_name="Sokak-Apartman"
+        )
 
     def get_full_address(self):
-        return self.district.name + "-" + self.neighborhood.name + "-" + self.extra_info
+        return f"{self.district.name} -\
+            {self.neighborhood.name} -\
+                 {self.extra_info}"
 
     def __str__(self):
         return f"{self.district.name.upper()} {self.neighborhood.name.upper()} {self.extra_info.upper()}"
@@ -120,11 +135,31 @@ class Address(models.Model):
 
 
 class Customer(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    nick = models.CharField(max_length=9, default="", unique=True)
-    phone1 = models.CharField(max_length=50, verbose_name="Telefon1", unique=True)
-    phone2 = models.CharField(max_length=50, blank=True, null=True, verbose_name="Telefon2")
-    address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name="Adres")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+        )
+    nick = models.CharField(
+        max_length=9,
+        default="",
+        unique=True
+        )
+    phone1 = models.CharField(
+        max_length=50,
+        verbose_name="Telefon1",
+        unique=True
+        )
+    phone2 = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Telefon2"
+        )
+    address = models.ForeignKey(
+        Address,
+        on_delete=models.CASCADE,
+        verbose_name="Adres"
+        )
 
     def __str__(self):
         return f"{self.user}"
@@ -190,10 +225,10 @@ class OrderItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.product.name} \
-                quantity: {self.quantity}\
-                {self.product.get_distribution_unit_display()} \
-                price: {self.price} TL"
+        return f"{self.product.name}\
+             quantity: {self.quantity}\
+                 {self.product.get_distribution_unit_display()}\
+                      price: {self.price} TL"
 
 
 class Order(models.Model):
