@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from core.models import Address, City, District, Neighborhood, Customer, Category, Product, OrderItem
+from core.models import Address, City, District, Neighborhood, Customer, Category, Product, OrderItem, Order
+import datetime
 
 def sample_user(email='test@emre.com', password='testpass'):
     """Create a sample user"""
@@ -36,6 +37,18 @@ def sample_product(name='Bütün Tavuk', distribution_unit=1, price=100, purchas
         purchase_price=purchase_price
     )
     return product
+
+
+def sample_order_item():
+    product = sample_product()
+    price = product.price
+    quantity = 3
+    order_item = OrderItem.objects.create(
+        product=product,
+        price=price,
+        quantity=quantity,
+    )
+    return order_item
 
 
 class ModelTests(TestCase):
@@ -128,4 +141,29 @@ class ModelTests(TestCase):
         )
         self.assertEqual(order_item.quantity, 10)
         self.assertEqual(order_item.price, product.price)
-        
+
+    def test_create_order_with_order_item_successful(self):
+        """Test creating new order with a order item is successful"""
+        user = sample_user()
+        address = sample_address()
+        customer = Customer.objects.create(
+            user=user,
+            address=address,
+            phone1='05337852236',
+            phone2='05392819398'
+        )
+        item = sample_order_item()
+        delivery_date = datetime.date.today()
+        payment_method = 1
+        order = Order.objects.create(
+            customer=customer,
+            delivery_date=delivery_date,
+            payment_method=payment_method,
+        )
+        order.items.add(item)
+
+        self.assertEqual(order.total_price, 300)
+        self.assertEqual(order.delivery_date, datetime.date.today())
+        self.assertIn(item, order.items.all())
+        print(item)
+        print(order.items.all())

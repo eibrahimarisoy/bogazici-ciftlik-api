@@ -1,8 +1,10 @@
 from django.core.validators import MinValueValidator
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
-from django.db import models
 from django.conf import settings
+from django.db import models
+from django.db.models.signals import m2m_changed, post_save
+from django.dispatch import receiver
 
 DISTRIBUTION_UNITS = [
     ('piece', 'Adet'),
@@ -119,6 +121,7 @@ class Address(models.Model):
 
 class Customer(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    nick = models.CharField(max_length=9, default="", unique=True)
     phone1 = models.CharField(max_length=50, verbose_name="Telefon1", unique=True)
     phone2 = models.CharField(max_length=50, blank=True, null=True, verbose_name="Telefon2")
     address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name="Adres")
@@ -179,7 +182,7 @@ class OrderItem(models.Model):
     price = models.FloatField(default=0)
     is_deleted = models.BooleanField(default=False)
     quantity = models.FloatField(
-        validators=[MinValueValidator(0.1)],
+        validators=[MinValueValidator(0.0)],
         verbose_name="Miktar"
         )
 
@@ -187,4 +190,104 @@ class OrderItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.product.name} price: {self.price} TL"
+        return f"{self.product.name} \
+                quantity: {self.quantity}\
+                {self.product.get_distribution_unit_display()} \
+                price: {self.price} TL"
+
+
+class Order(models.Model):
+    class PaymentMethodEnum(models.IntegerChoices):
+        CASH = 1, 'Nakit'
+        EFT = 2, 'EFT'
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        verbose_name="Müşteri Adı"
+        )
+    nick = models.CharField(
+        max_length=14,
+        unique=True
+        )
+    items = models.ManyToManyField(
+        OrderItem,
+        verbose_name="Sipariş Ürünleri",
+        related_name='order_item'
+        )
+    delivery_date = models.DateField(verbose_name="Teslimat Tarihi")
+    payment_method = models.PositiveSmallIntegerField(
+        choices=PaymentMethodEnum.choices,
+        blank=True,
+        null=True,
+        verbose_name="Ödeme Şekli"
+    )
+    is_delivered = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=False)
+
+    total_price = models.FloatField(
+        validators=[MinValueValidator(0.0)],
+        default=0.0,
+        verbose_name="Toplam Tutar"
+        )
+    received_money = models.FloatField(default=0.0)
+    remaining_debt = models.FloatField(default=0.0)
+    service_fee = models.FloatField(default=0.0)
+
+    is_instagram = models.BooleanField(
+        default=False,
+        verbose_name="İnstagram?"
+        )
+    instagram_username = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="İnstagram Adı"
+        )
+    notes = models.CharField(
+        max_length=50,
+        verbose_name="Notlar",
+        blank=True,
+        null=True
+        )
+    
+    createt_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Customer: {self.Customer} - \
+                Total: {self.total_price} - \
+                Delivered: {self.is_delivered}"
+
+    def total_price_update(self):
+        if not self.is_delivered:
+            total_price = 0
+            for item in self.items.all():
+                if item.is_deleted == False:
+                    total_price += item.price * item.quantity
+            self.total_price = total_price
+
+    class Meta:
+        ordering = ['-delivery_date']
+
+
+@receiver(post_save, sender=OrderItem)
+def order_item_receiver(sender, instance, created, *args, **kwargs):
+    if created:
+        instance.price = instance.product.price
+        instance.save()
+    if instance.order_item.last() is not None:
+        instance.price = instance.product.price
+        instance.order_item.last().total_price_update()
+
+
+@receiver(m2m_changed, sender=Order.items.through)
+def order_receiver(sender, instance, *args, **kwargs):
+    instance.total_price_update()
+
+
+@receiver(post_save, sender=Product)
+def order_item_receiver_for_update(sender, instance, *args, **kwargs):
+    for item in instance.orderitem_set.all():
+        item.price = instance.price
+        item.save()
