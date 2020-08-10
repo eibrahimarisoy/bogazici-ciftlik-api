@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from core.models import Address, City, District, Neighborhood, Customer
+from core.models import Address, City, District, Neighborhood, Customer, Category, Product
 
 def sample_user(email='test@emre.com', password='testpass'):
     """Create a sample user"""
@@ -76,3 +76,29 @@ class ModelTests(TestCase):
             phone2='5331239865'
         )
         self.assertEqual(str(customer), customer.user.email)
+    
+    def test_create_category_successful(self):
+        """Test creating new category is successful"""
+        category_name = "Tavuk"
+        category = Category.objects.create(
+            name=category_name
+        )
+        self.assertEqual(category.name, category_name)
+    
+    def test_create_product_with_category_successful(self):
+        """Test creating new product with a category is successful"""
+        category_name = "Tavuk"
+        category = Category.objects.create(name=category_name)
+        product_name = "Bütün Tavuk"
+        distribution_unit = 3
+        price = 100
+        purchase_price = 70
+        product = Product.objects.create(
+            category=category,
+            name=product_name,
+            distribution_unit=distribution_unit,
+            price=price,
+            purchase_price=purchase_price
+        )
+        self.assertEqual(product.category.name, category_name)
+        self.assertEqual(product.name, product_name)

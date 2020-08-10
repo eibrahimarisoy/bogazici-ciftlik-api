@@ -3,7 +3,13 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
 from django.db import models
 from django.conf import settings
 
-# Create your models here.
+DISTRIBUTION_UNITS = [
+    ('piece', 'Adet'),
+    ('liter', 'LT'),
+    ('kilogram', 'KG'),
+    ('kangal', 'Kangal'),
+]
+
 
 class UserManager(BaseUserManager):
 
@@ -121,3 +127,43 @@ class Customer(models.Model):
 
     class Meta:
         ordering = ['user']
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=50, verbose_name="Kategori Adı")
+    createt_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Product(models.Model):
+    class DistributionUnitEnum(models.IntegerChoices):
+        PIECE = 1, 'Adet'
+        LITER = 2, 'Litre'
+        KILOGRAM = 3, 'KG'
+        KANGAL = 4, 'Kangal'
+    
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        verbose_name="Ürün Kategorisi"
+        )
+    name = models.CharField(max_length=70, verbose_name="Ürün Adı")
+    distribution_unit = models.PositiveSmallIntegerField(
+        choices=DistributionUnitEnum.choices,
+        verbose_name="Dağıtım Birimi"
+        )
+    price = models.FloatField(verbose_name="Fiyatı")
+    purchase_price = models.FloatField(
+        verbose_name="Alış Fiyatı",
+        )
+    createt_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.category.name} - {self.name}"
+    
+    class Meta:
+        ordering = ['category']
