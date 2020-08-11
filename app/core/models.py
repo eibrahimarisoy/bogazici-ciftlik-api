@@ -290,9 +290,7 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Customer: {self.Customer} - \
-                Total: {self.total_price} - \
-                Delivered: {self.is_delivered}"
+        return f"Customer: {self.customer} - Total: {self.total_price} - Delivered: {self.is_delivered}"
 
     def total_price_update(self):
         if not self.is_delivered:
@@ -300,7 +298,11 @@ class Order(models.Model):
             for item in self.items.all():
                 if item.is_deleted == False:
                     total_price += item.price * item.quantity
+                    print("********")
+            print(total_price)
             self.total_price = total_price
+            self.save()
+            print(self.total_price)
 
     class Meta:
         ordering = ['-delivery_date']
@@ -318,6 +320,7 @@ def order_item_receiver(sender, instance, created, *args, **kwargs):
 
 @receiver(m2m_changed, sender=Order.items.through)
 def order_receiver(sender, instance, *args, **kwargs):
+    print("m2m changed")
     instance.total_price_update()
 
 
