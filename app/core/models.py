@@ -194,7 +194,7 @@ class Product(models.Model):
         choices=DistributionUnitEnum.choices,
         verbose_name="Dağıtım Birimi"
         )
-    price = models.FloatField(verbose_name="Fiyatı")
+    price = models.FloatField(verbose_name="Satış Fiyatı")
     purchase_price = models.FloatField(
         verbose_name="Alış Fiyatı",
         )
