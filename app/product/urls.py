@@ -8,9 +8,11 @@ router.register("categories", views.CategoryViewSet)
 router.register('products', views.ProductViewSet)
 
 
+
 app_name = 'product'
 
 
 urlpatterns = [
     path('', include(router.urls)),
+
     ]
