@@ -14,12 +14,20 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     """Serialize a product"""
-    # category = serializers.PrimaryKeyRelatedField(
-    #     queryset=Category.objects.all(), 
-    # )
+    category = CategorySerializer()
+    distribution_unit = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
-        fields = ['id', 'category', 'name', \
-             'distribution_unit', 'purchase_price', 'price']
+        fields = ['id', 'category', 'name',
+                  'distribution_unit', 'purchase_price', 'price']
 
-        depth = 2
+    def get_distribution_unit(self, obj):
+        return obj.get_distribution_unit_display()
+
+
+class ProductCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = '__all__'
