@@ -123,9 +123,7 @@ class Address(models.Model):
         )
 
     def get_full_address(self):
-        return f"{self.district.name} -\
-            {self.neighborhood.name} -\
-                 {self.extra_info}"
+        return f"{self.neighborhood.name} Mahallesi {self.extra_info} {self.district.name}/{self.city.name}"
 
     def __str__(self):
         return f"{self.district.name.upper()} {self.neighborhood.name.upper()} {self.extra_info.upper()}"

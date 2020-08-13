@@ -1,14 +1,15 @@
 from rest_framework import authentication, generics, permissions, viewsets
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.settings import api_settings
 
-from core.models import City, District, Neighborhood
+from core.models import Address, City, District, Neighborhood
 
-from .serializers import (AuthTokenSerializer, CitySerializer,
-                          DistrictSerializer, NeighborhoodSerializer,
-                          UserSerializer)
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from .serializers import (AddressSerializer, AuthTokenSerializer,
+                          CitySerializer, DistrictSerializer,
+                          NeighborhoodSerializer, UserSerializer)
+
 
 class CreateUserView(generics.CreateAPIView):
     """Create new user in the system"""
@@ -45,8 +46,31 @@ class DistrictViewSet(viewsets.ModelViewSet):
     serializer_class = DistrictSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
+    def get_queryset(self):
+        queryset = self.queryset
+        city = self.request.query_params.get('city', None)
+        print(city)
+        if city is not None:
+            queryset = queryset.filter(city__pk=city)
+        return queryset
+
+
 class NeighborhoodViewSet(viewsets.ModelViewSet):
     queryset = Neighborhood.objects.all()
     authentication_classes = (TokenAuthentication,)
     serializer_class = NeighborhoodSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+        queryset = self.queryset
+        district = self.request.query_params.get('district', None)
+        if district is not None:
+            queryset = queryset.filter(district__pk=district)
+        return queryset
+
+
+class AddressViewSet(viewsets.ModelViewSet):
+    queryset = Address.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = AddressSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)

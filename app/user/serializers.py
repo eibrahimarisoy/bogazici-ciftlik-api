@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework import serializers
 
-from core.models import City, District, Neighborhood
+from core.models import City, District, Neighborhood, Address
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -70,3 +70,17 @@ class NeighborhoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = Neighborhood
         fields = '__all__'
+
+
+class AddressSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        rep = super(AddressSerializer, self).to_representation(instance)
+        rep['city'] = instance.city.name
+        rep['district'] = instance.district.name
+        rep['neighborhood'] = instance.neighborhood.name
+        return rep

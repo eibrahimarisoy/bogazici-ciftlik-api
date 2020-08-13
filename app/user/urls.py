@@ -9,6 +9,7 @@ router = DefaultRouter()
 router.register('cities', views.CityViewSet)
 router.register('districts', views.DistrictViewSet)
 router.register('neighborhoods', views.NeighborhoodViewSet)
+router.register('addresses', views.AddressViewSet)
 
 
 urlpatterns = [
