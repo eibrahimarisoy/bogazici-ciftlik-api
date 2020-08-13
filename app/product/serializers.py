@@ -19,8 +19,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'category', 'name',
-                  'distribution_unit', 'purchase_price', 'price']
+        fields = '__all__'
 
     def get_distribution_unit(self, obj):
         return obj.get_distribution_unit_display()

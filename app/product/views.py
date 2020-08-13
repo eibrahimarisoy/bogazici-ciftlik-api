@@ -30,3 +30,10 @@ class ProductViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return ProductCreateSerializer
         return super().get_serializer_class()
+
+    def get_queryset(self):
+        queryset = self.queryset
+        name = self.request.query_params.get('category', None)
+        if name is not None:
+            queryset = queryset.filter(category__name=name)
+        return queryset
