@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from core.models import User, Address, Customer, Product, Category, OrderItem, Order
+from core.models import User, Address, Customer, Product, Category, OrderItem, Order, City, District, Neighborhood
 
 class UserAdmin(BaseUserAdmin):
     ordering = ['id']
@@ -32,4 +32,6 @@ admin.site.register(Product)
 admin.site.register(Category)
 admin.site.register(OrderItem)
 admin.site.register(Order)
-
+admin.site.register(City)
+admin.site.register(District)
+admin.site.register(Neighborhood)

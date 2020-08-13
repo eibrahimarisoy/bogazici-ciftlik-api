@@ -1,13 +1,15 @@
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework import serializers
 
+from core.models import City, District, Neighborhood
+
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user objects"""
 
     class Meta:
         model = get_user_model()
-        fields = ('email','password', 'username', 'first_name', 'last_name')
+        fields = ('email', 'password', 'username', 'first_name', 'last_name')
         extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
 
     def create(self, validated_data):
@@ -50,3 +52,21 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = '__all__'
+
+
+class DistrictSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = District
+        fields = '__all__'
+
+
+class NeighborhoodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Neighborhood
+        fields = '__all__'

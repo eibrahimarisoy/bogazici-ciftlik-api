@@ -1,7 +1,6 @@
 from django.shortcuts import render
-from rest_framework import mixins, viewsets
+from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from core.models import Category, Product
